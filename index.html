@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>あまりのあるわり算プリント</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Zen+Maru+Gothic:wght@400;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Zen Maru Gothic', sans-serif;
+            background-color: #f0f0f0;
+            color: #333;
+            /* 画面表示時に全体を中央寄せ */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            min-height: 100vh;
+            padding-bottom: 40px;
+        }
+        
+        /* Print Page Setup */
+        @page {
+            size: A4;
+            margin: 0;
+        }
+
+        /* A4 Paper Styling */
+        .sheet {
+            background: white;
+            width: 210mm;
+            min-height: 297mm; /* A4 height */
+            margin: 20px auto;
+            /* 余白を広げて中央配置感を強める */
+            padding: 20mm; 
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+            position: relative;
+            box-sizing: border-box;
+            display: flex;
+            flex-direction: column;
+        }
+
+        /* 画面上では解答用紙を非表示にする */
+        #answer-sheet {
+            display: none;
+        }
+
+        /* Header Box Styling */
+        .header-box {
+            border: 3px solid #000;
+            padding: 0.8rem 1.5rem;
+            margin-bottom: 1rem;
+        }
+
+        /* Column Layout for Problems */
+        .problems-wrapper {
+            display: flex;
+            gap: 2rem; 
+            margin-top: 0.5rem;
+            flex-grow: 1; /* Allow problems to take available space */
+        }
+
+        .problem-column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: space-between; /* Distribute items evenly */
+            gap: 0; 
+        }
+
+        .problem-item {
+            /* 余白を増やした分、文字と行間を少し詰めて収める */
+            font-size: 1.25rem; 
+            border-bottom: 1px dashed #ccc;
+            padding-bottom: 0.4rem; 
+            margin-bottom: 0.6rem; 
+            display: flex;
+            align-items: center;
+            min-height: 2.6rem; 
+            white-space: nowrap;
+            position: relative;
+        }
+        
+        /* 最後の問題の下の余白調整 */
+        .problem-item:last-child {
+            margin-bottom: 0;
+            border-bottom: none; 
+            border-bottom: 1px dashed #ccc; 
+        }
+
+        .problem-number {
+            font-weight: bold;
+            width: 2.8rem; 
+            font-size: 1.1rem;
+            color: #555;
+            flex-shrink: 0;
+        }
+
+        .equation {
+            letter-spacing: 0.05em;
+            white-space: nowrap;
+            margin-right: 0.2rem;
+            flex-shrink: 0;
+        }
+
+        /* Answer Box Styling */
+        .answer-area {
+            display: flex;
+            align-items: center;
+            margin-left: 0.5rem;
+            white-space: nowrap;
+        }
+
+        /* Wrapper for Input + Mark */
+        .input-wrapper {
+            position: relative;
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            margin: 0 0.2rem;
+        }
+
+        /* Input Box Styling */
+        input.box {
+            display: inline-block;
+            width: 2.4rem; /* 少し縮小 */
+            height: 2.4rem;
+            border: 2px solid #555;
+            margin: 0; 
+            font-weight: bold;
+            color: #333;
+            font-size: 1.25rem;
+            border-radius: 6px;
+            background: white;
+            text-align: center;
+            outline: none;
+            padding: 0;
+            -moz-appearance: textfield;
+            transition: background-color 0.2s, border-color 0.2s;
+            z-index: 1; 
+        }
+        input.box:focus {
+            border-color: #2563eb;
+            background-color: #eff6ff;
+        }
+        input.box::-webkit-outer-spin-button,
+        input.box::-webkit-inner-spin-button {
+            -webkit-appearance: none;
+            margin: 0;
+        }
+
+        /* Correct/Incorrect Styles */
+        input.box.correct {
+            background-color: #fff; 
+        }
+        input.box.incorrect {
+            border-color: #3b82f6; 
+            background-color: #eff6ff;
+        }
+
+        .text-amari {
+            font-size: 0.9rem;
+            margin: 0 0.2rem;
+        }
+
+        /* Individual Marks (Circle) */
+        .input-mark {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -60%); /* 中心を少し上にずらして文字に合わせる */
+            color: #ef4444; 
+            font-size: 8rem; /* サイズをさらに大きく変更 */
+            font-family: "Times New Roman", serif; 
+            pointer-events: none;
+            display: none;
+            z-index: 10;
+            opacity: 0.5; /* 見やすいように透明度を調整 */
+            line-height: 1;
+            white-space: nowrap;
+        }
+
+        /* Toast Warning Styling */
+        .toast {
+            position: fixed;
+            top: 2rem;
+            left: 50%;
+            transform: translateX(-50%);
+            background-color: #f59e0b; 
+            color: white;
+            padding: 0.75rem 1.5rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            z-index: 50;
+            opacity: 0;
+            transition: opacity 0.3s ease-in-out;
+            pointer-events: none;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+        .toast.visible {
+            opacity: 1;
+        }
+
+        /* Answer Sheet (Static) */
+        #answer-sheet .box {
+            display: inline-flex;
+            justify-content: center;
+            align-items: center;
+            color: #d00;
+            border: 2px solid #555;
+            width: 2.4rem;
+            height: 2.4rem;
+            font-size: 1.25rem;
+            border-radius: 6px;
+            margin: 0 0.2rem;
+        }
+
+        /* Modal Styling */
+        #result-modal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: rgba(0, 0, 0, 0.5);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+        #result-modal.show {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        .modal-content {
+            background: white;
+            padding: 2rem;
+            border-radius: 1rem;
+            text-align: center;
+            max-width: 90%;
+            width: 400px;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.2);
+            transform: scale(0.9);
+            transition: transform 0.3s;
+            position: relative;
+            overflow: hidden;
+        }
+        #result-modal.show .modal-content {
+            transform: scale(1);
+        }
+        .modal-score {
+            font-size: 4rem;
+            font-weight: bold;
+            color: #ef4444;
+            margin: 0.5rem 0;
+        }
+        .modal-message {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: #333;
+            margin-bottom: 1.5rem;
+            line-height: 1.4;
+        }
+        .modal-close {
+            background: #3b82f6;
+            color: white;
+            padding: 0.75rem 2rem;
+            border-radius: 9999px;
+            font-weight: bold;
+            font-size: 1.2rem;
+            cursor: pointer;
+            border: none;
+            transition: background 0.2s;
+        }
+        .modal-close:hover {
+            background: #2563eb;
+        }
+
+        /* Confetti Canvas */
+        #confetti-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 99;
+        }
+
+        /* Screen-only controls */
+        .controls {
+            max-width: 210mm;
+            width: 100%;
+            margin: 20px auto;
+            text-align: center;
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        /* Print Styling */
+        @media print {
+            body {
+                background: none;
+                margin: 0;
+                display: block; /* Flexを解除して印刷レイアウトに従う */
+                padding: 0;
+                -webkit-print-color-adjust: exact;
+            }
+            .controls, .toast, #result-modal, #confetti-canvas {
+                display: none !important;
+            }
+            .sheet {
+                box-shadow: none;
+                margin: 0 auto; /* 中央配置 */
+                width: 100%;
+                height: 297mm;
+                page-break-after: always;
+                /* 印刷時の余白を20mmに設定し、全体を中央に寄せる */
+                padding: 20mm; 
+                overflow: hidden;
+            }
+
+            /* 印刷時は解答用紙を表示（Flexレイアウトを維持） */
+            #answer-sheet {
+                display: flex !important;
+            }
+            
+            .sheet:last-of-type {
+                page-break-after: auto;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Controls Area (Not printed) -->
+    <div class="controls">
+        <button onclick="generateNewProblems()" class="bg-purple-600 hover:bg-purple-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
+            <span>🔄</span> 問題を作る
+        </button>
+        <button onclick="checkAnswers()" class="bg-rose-500 hover:bg-rose-600 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
+            <span>💮</span> 答え合わせ
+        </button>
+        <button onclick="window.print()" class="bg-blue-600 hover:bg-blue-700 text-white font-bold py-2 px-6 rounded-lg shadow transition flex items-center gap-2">
+            <span>🖨️</span> 印刷する
+        </button>
+    </div>
+
+    <!-- Toast Notification -->
+    <div id="warning-toast" class="toast">
+        <span>⚠️</span>
+        <span>数字は半角で入力してね</span>
+    </div>
+
+    <!-- Result Modal -->
+    <div id="result-modal">
+        <div class="modal-content">
+            <h2 class="text-xl text-gray-500 font-bold">けっか</h2>
+            <div id="modal-score" class="modal-score">100点</div>
+            <div id="modal-message" class="modal-message">すばらしい！<br>あまりのあるわり算マスターです</div>
+            <button class="modal-close" onclick="closeModal()">とじる</button>
+        </div>
+    </div>
+    
+    <!-- Confetti Canvas -->
+    <canvas id="confetti-canvas"></canvas>
+
+    <!-- Question Sheet -->
+    <div class="sheet" id="question-sheet">
+        <!-- Header Box -->
+        <div class="header-box">
+            <!-- Row 1: Title -->
+            <div class="mb-4">
+                <h1 class="text-2xl font-bold">
+                    <span class="text-lg mr-4 text-gray-600">3年生 算数</span>あまりのある わり算
+                </h1>
+            </div>
+            <!-- Row 2: Name Fields (Right Aligned) -->
+            <div class="flex justify-end gap-6 text-lg">
+                <!-- 変更箇所：幅をw-40に縮小し、「年」の前にも空白ができるように調整 -->
+                <div class="border-b border-black w-40 pb-1 flex justify-end items-end">
+                    <span class="text-sm text-gray-500 mr-6">年</span>
+                    <span class="text-sm text-gray-500 mr-6">組</span>
+                    <span class="text-sm text-gray-500 mr-2">番</span>
+                </div>
+                <div class="border-b border-black w-48 pb-1">
+                    <span class="text-sm text-gray-500 mr-2">名前</span>
+                </div>
+            </div>
+        </div>
+
+        <div class="flex justify-between items-end mb-4">
+            <div class="text-sm text-gray-500">
+                ※ ▢の中に数字を入れて、「答え合わせ」ボタンを押してね。
+            </div>
+            <span class="border border-black px-4 py-2 rounded">
+                <span class="text-sm text-gray-500">点数</span>
+                <span id="score-display" class="inline-block w-16 text-right text-2xl font-bold text-red-600"></span> / 100
+            </span>
+        </div>
+
+        <!-- Two Columns Layout -->
+        <div class="problems-wrapper">
+            <div class="problem-column" id="q-col-left"></div>
+            <div class="problem-column" id="q-col-right"></div>
+        </div>
+    </div>
+
+    <!-- Answer Sheet -->
+    <div class="sheet" id="answer-sheet">
+        <div class="header-box">
+            <div class="mb-4">
+                <h1 class="text-2xl font-bold">
+                    【解答】あまりのある わり算
+                </h1>
+            </div>
+            <div class="flex justify-end text-lg">
+                <p class="text-sm text-gray-600">答え合わせ</p>
+            </div>
+        </div>
+
+        <div class="problems-wrapper">
+            <div class="problem-column" id="a-col-left"></div>
+            <div class="problem-column" id="a-col-right"></div>
+        </div>
+    </div>
+
+    <script>
+        // --- Web Audio API for Sound Effects ---
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioCtx = new AudioContext();
+
+        function playTone(freq, duration, type = 'sine', startTime = 0) {
+            const osc = audioCtx.createOscillator();
+            const gainNode = audioCtx.createGain();
+            
+            osc.type = type;
+            osc.frequency.setValueAtTime(freq, audioCtx.currentTime + startTime);
+            
+            gainNode.gain.setValueAtTime(0.3, audioCtx.currentTime + startTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioCtx.currentTime + startTime + duration);
+
+            osc.connect(gainNode);
+            gainNode.connect(audioCtx.destination);
+            
+            osc.start(audioCtx.currentTime + startTime);
+            osc.stop(audioCtx.currentTime + startTime + duration);
+        }
+
+        function playFanfareSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            
+            // Simple Fanfare: Do-Do-Do-Re-Mi-Fa-Sol (C E G C)
+            const now = 0;
+            playTone(523.25, 0.2, 'square', now);       // Do (High)
+            playTone(523.25, 0.2, 'square', now + 0.15);
+            playTone(523.25, 0.2, 'square', now + 0.3);
+            playTone(659.25, 0.4, 'square', now + 0.45); // Mi
+            playTone(783.99, 0.4, 'square', now + 0.6);  // Sol
+            playTone(1046.50, 0.8, 'square', now + 0.8); // Do (Higher)
+        }
+
+        function playGoodSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            // Nice ascending chime
+            playTone(523.25, 0.3, 'sine', 0);
+            playTone(659.25, 0.3, 'sine', 0.1);
+            playTone(783.99, 0.6, 'sine', 0.2);
+        }
+
+        function playNormalSound() {
+            if (audioCtx.state === 'suspended') audioCtx.resume();
+            // Simple ping
+            playTone(659.25, 0.4, 'sine', 0);
+        }
+
+        // --- Confetti Logic ---
+        const canvas = document.getElementById('confetti-canvas');
+        const ctx = canvas.getContext('2d');
+        let confettiParticles = [];
+        let animationId = null;
+
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+
+        window.addEventListener('resize', () => {
+            canvas.width = window.innerWidth;
+            canvas.height = window.innerHeight;
+        });
+
+        class Particle {
+            constructor() {
+                this.x = Math.random() * canvas.width;
+                this.y = Math.random() * canvas.height - canvas.height;
+                this.size = Math.random() * 10 + 5;
+                this.speedY = Math.random() * 3 + 2;
+                this.speedX = Math.random() * 2 - 1;
+                this.color = `hsl(${Math.random() * 360}, 100%, 50%)`;
+                this.rotation = Math.random() * 360;
+                this.rotationSpeed = Math.random() * 10 - 5;
+            }
+            update() {
+                this.y += this.speedY;
+                this.x += this.speedX;
+                this.rotation += this.rotationSpeed;
+                if (this.y > canvas.height) {
+                    this.y = -10;
+                    this.x = Math.random() * canvas.width;
+                }
+            }
+            draw() {
+                ctx.save();
+                ctx.translate(this.x, this.y);
+                ctx.rotate(this.rotation * Math.PI / 180);
+                ctx.fillStyle = this.color;
+                ctx.fillRect(-this.size / 2, -this.size / 2, this.size, this.size);
+                ctx.restore();
+            }
+        }
+
+        function startConfetti() {
+            if (animationId) return; // Already running
+            confettiParticles = [];
+            for (let i = 0; i < 150; i++) {
+                confettiParticles.push(new Particle());
+            }
+            animateConfetti();
+        }
+
+        function stopConfetti() {
+            if (animationId) {
+                cancelAnimationFrame(animationId);
+                animationId = null;
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+            }
+        }
+
+        function animateConfetti() {
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            confettiParticles.forEach(p => {
+                p.update();
+                p.draw();
+            });
+            animationId = requestAnimationFrame(animateConfetti);
+        }
+
+        // --- Game Logic ---
+        
+        // 問題生成ロジック
+        function createProblemSet() {
+            const newProblems = [];
+            let count = 0;
+            let quotientOneCount = 0; // 商が1の問題数をカウントするための変数
+            
+            while (count < 20) {
+                const divisor = Math.floor(Math.random() * 8) + 2; // 2~9
+                const quotient = Math.floor(Math.random() * 9) + 1; // 1~9
+
+                // 商が1の問題は1問までに制限する
+                if (quotient === 1 && quotientOneCount >= 1) {
+                    continue; // 既に1問ある場合はスキップして作り直し
+                }
+
+                const remainder = Math.floor(Math.random() * (divisor - 1)) + 1; // 1 ~ divisor-1
+                const dividend = divisor * quotient + remainder;
+
+                if (dividend >= 10) {
+                    newProblems.push({
+                        q: `${dividend} ÷ ${divisor}`,
+                        quotient: quotient,
+                        remainder: remainder
+                    });
+                    
+                    // 商が1だった場合、カウントを増やす
+                    if (quotient === 1) {
+                        quotientOneCount++;
+                    }
+                    
+                    count++;
+                }
+            }
+            return newProblems;
+        }
+
+        let currentProblems = [];
+
+        function renderProblems(problems) {
+            const qLeft = document.getElementById('q-col-left');
+            const qRight = document.getElementById('q-col-right');
+            const aLeft = document.getElementById('a-col-left');
+            const aRight = document.getElementById('a-col-right');
+            const scoreDisplay = document.getElementById('score-display');
+            
+            // Reset contents
+            qLeft.innerHTML = ''; qRight.innerHTML = '';
+            aLeft.innerHTML = ''; aRight.innerHTML = '';
+            scoreDisplay.textContent = ''; // Reset score
+
+            problems.forEach((item, index) => {
+                const num = index + 1;
+                
+                // Question Sheet HTML (Interactive)
+                const qHtml = `
+                    <div class="problem-item" id="p-${index}">
+                        <span class="problem-number">(${num})</span>
+                        <span class="equation">${item.q} ＝</span>
+                        <div class="answer-area">
+                            <div class="input-wrapper">
+                                <input type="tel" class="box q-box" data-idx="${index}" data-type="q" maxlength="2">
+                                <div class="input-mark q-mark">○</div>
+                            </div>
+                            <span class="text-amari">あまり</span>
+                            <div class="input-wrapper">
+                                <input type="tel" class="box r-box" data-idx="${index}" data-type="r" maxlength="1">
+                                <div class="input-mark r-mark">○</div>
+                            </div>
+                        </div>
+                    </div>
+                `;
+
+                // Answer Sheet HTML (Static)
+                const aHtml = `
+                    <div class="problem-item">
+                        <span class="problem-number">(${num})</span>
+                        <span class="equation">${item.q} ＝</span>
+                        <div class="answer-area">
+                            <span class="box">${item.quotient}</span>
+                            <span class="text-amari">あまり</span>
+                            <span class="box">${item.remainder}</span>
+                        </div>
+                    </div>
+                `;
+
+                if (index < 10) {
+                    qLeft.innerHTML += qHtml;
+                    aLeft.innerHTML += aHtml;
+                } else {
+                    qRight.innerHTML += qHtml;
+                    aRight.innerHTML += aHtml;
+                }
+            });
+
+            // Add Enter key navigation
+            setupInputNavigation();
+        }
+
+        let toastTimeout;
+        function showToast() {
+            const toast = document.getElementById('warning-toast');
+            toast.classList.add('visible');
+            
+            if (toastTimeout) clearTimeout(toastTimeout);
+            
+            toastTimeout = setTimeout(() => {
+                toast.classList.remove('visible');
+            }, 3000);
+        }
+
+        function setupInputNavigation() {
+            const inputs = document.querySelectorAll('input.box');
+            inputs.forEach((input, index) => {
+                // 全角→半角変換と数字以外の除去
+                input.addEventListener('input', function(e) {
+                    let val = this.value;
+                    let hasFullWidth = false;
+
+                    // 全角数字が含まれているかチェック
+                    if (/[０-９]/.test(val)) {
+                        hasFullWidth = true;
+                    }
+
+                    // 全角数字を半角に変換
+                    val = val.replace(/[０-９]/g, function(s) {
+                        return String.fromCharCode(s.charCodeAt(0) - 0xFEE0);
+                    });
+                    
+                    // 数字以外を除去
+                    val = val.replace(/[^0-9]/g, '');
+                    
+                    // 値が変わった場合（全角があった、または数字以外があった）
+                    if (this.value !== val) {
+                        this.value = val;
+                        // 全角が含まれていた場合のみ注意を表示
+                        if (hasFullWidth) {
+                            showToast();
+                        }
+                    }
+                });
+
+                input.addEventListener('keydown', (e) => {
+                    if (e.key === 'Enter') {
+                        e.preventDefault();
+                        const nextInput = inputs[index + 1];
+                        if (nextInput) {
+                            nextInput.focus();
+                        } else {
+                            // If last input, check answers? Or just lose focus
+                            input.blur();
+                        }
+                    }
+                });
+            });
+        }
+
+        function generateNewProblems() {
+            currentProblems = createProblemSet();
+            renderProblems(currentProblems);
+            // Close modal/stop confetti if new problems are generated
+            closeModal();
+        }
+
+        function checkAnswers() {
+            let correctCount = 0;
+            let problemCorrectCount = 0;
+            let allAnswered = true; // 全て回答したかどうかのフラグ
+
+            currentProblems.forEach((problem, index) => {
+                const problemRow = document.getElementById(`p-${index}`);
+                const qInput = problemRow.querySelector('.q-box');
+                const rInput = problemRow.querySelector('.r-box');
+                const qMark = problemRow.querySelector('.q-mark');
+                const rMark = problemRow.querySelector('.r-mark');
+
+                const qVal = qInput.value;
+                const rVal = rInput.value;
+
+                // 未入力があるかチェック
+                if (qVal === '' || rVal === '') {
+                    allAnswered = false;
+                }
+
+                const userQ = parseInt(qVal);
+                const userR = parseInt(rVal);
+
+                // Reset styles
+                qInput.classList.remove('correct', 'incorrect');
+                rInput.classList.remove('correct', 'incorrect');
+                qMark.style.display = 'none';
+                rMark.style.display = 'none';
+
+                let isQCorrect = (userQ === problem.quotient);
+                let isRCorrect = (userR === problem.remainder);
+
+                // Apply styles based on correctness
+                if (isQCorrect) {
+                    qInput.classList.add('correct');
+                    qMark.style.display = 'block';
+                } else {
+                    qInput.classList.add('incorrect');
+                }
+
+                if (isRCorrect) {
+                    rInput.classList.add('correct');
+                    rMark.style.display = 'block';
+                } else {
+                    rInput.classList.add('incorrect');
+                }
+
+                // Score logic: Entire problem correct?
+                if (isQCorrect && isRCorrect) {
+                    problemCorrectCount++;
+                }
+            });
+
+            // Update Score (based on fully correct answers)
+            const score = Math.round((problemCorrectCount / currentProblems.length) * 100);
+            const scoreDisplay = document.getElementById('score-display');
+            scoreDisplay.textContent = score;
+
+            // Show Result Modal
+            showResultModal(score, allAnswered);
+        }
+
+        function showResultModal(score, allAnswered) {
+            const modal = document.getElementById('result-modal');
+            const scoreText = document.getElementById('modal-score');
+            const msgText = document.getElementById('modal-message');
+            
+            scoreText.textContent = score + "点";
+
+            if (!allAnswered) {
+                // まだ全部答えていない場合
+                msgText.innerHTML = "のこりの問題も<br>がんばろう！";
+                playNormalSound();
+            } else if (score === 100) {
+                msgText.innerHTML = "すばらしい！<br>あまりのあるわり算マスターです";
+                startConfetti();
+                playFanfareSound();
+            } else if (score >= 90) {
+                msgText.innerHTML = "すごい！あとちょっとで満点だ！";
+                playGoodSound();
+            } else if (score >= 70) {
+                msgText.innerHTML = "よくがんばったね！そのちょうし！";
+                playGoodSound();
+            } else {
+                msgText.innerHTML = "あきらめずに チャレンジしよう！";
+                playNormalSound();
+            }
+
+            modal.classList.add('show');
+        }
+
+        function closeModal() {
+            const modal = document.getElementById('result-modal');
+            modal.classList.remove('show');
+            stopConfetti();
+        }
+
+        // Initialize on load
+        window.onload = generateNewProblems;
+    </script>
+</body>
+</html>
