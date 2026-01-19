@@ -389,15 +389,18 @@
                 </h1>
             </div>
             <!-- Row 2: Name Fields (Right Aligned) -->
-            <div class="flex justify-end gap-6 text-lg">
-                <!-- 変更箇所：幅をw-40に縮小し、「年」の前にも空白ができるように調整 -->
-                <div class="border-b border-black w-40 pb-1 flex justify-end items-end">
-                    <span class="text-sm text-gray-500 mr-6">年</span>
-                    <span class="text-sm text-gray-500 mr-6">組</span>
-                    <span class="text-sm text-gray-500 mr-2">番</span>
+            <div class="flex justify-end items-end gap-6 text-lg">
+                <div class="flex items-center gap-2">
+                    <input type="text" class="w-12 border border-gray-400 rounded px-1 text-center text-lg focus:outline-none focus:border-blue-500">
+                    <span class="text-sm text-gray-500">年</span>
+                    <input type="text" class="w-12 border border-gray-400 rounded px-1 text-center text-lg focus:outline-none focus:border-blue-500">
+                    <span class="text-sm text-gray-500">組</span>
+                    <input type="text" class="w-12 border border-gray-400 rounded px-1 text-center text-lg focus:outline-none focus:border-blue-500">
+                    <span class="text-sm text-gray-500">番</span>
                 </div>
-                <div class="border-b border-black w-48 pb-1">
-                    <span class="text-sm text-gray-500 mr-2">名前</span>
+                <div class="flex items-center gap-2">
+                    <span class="text-sm text-gray-500">名前</span>
+                    <input type="text" class="w-48 border border-gray-400 rounded px-2 text-lg focus:outline-none focus:border-blue-500">
                 </div>
             </div>
         </div>
