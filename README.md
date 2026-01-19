@@ -1,0 +1,2 @@
+# amariwarizan
+あまりのあるわり算
